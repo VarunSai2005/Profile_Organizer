@@ -1,0 +1,58 @@
+# Build
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# NuGet
+*.nupkg
+packages/
+
+# Publish
+publish/
+
+# EF Core generated SQL (optional)
+*.sql
+
+# User secrets
+secrets.json
+
+# App settings (if they contain secrets)
+appsettings.Development.json
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test Results
+TestResults/
+
+# Coverage
+coverage/
+*.coverage
+*.coveragexml
+
+# Node (if using React/Angular frontend in same repo)
+node_modules/
+dist/
+
+# Temporary files
+*.tmp
+*.cache
