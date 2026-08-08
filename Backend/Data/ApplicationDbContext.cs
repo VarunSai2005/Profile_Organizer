@@ -19,7 +19,8 @@ public class ApplicationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Admin>()
-            .HasKey(a => a.Username);
+            .HasIndex(a => a.Username)
+            .IsUnique();
 
         base.OnModelCreating(modelBuilder);
     }
