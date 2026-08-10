@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Xml;
 using Backend.Data;
 using Backend.DTOs.Student;
 using Backend.Models;
@@ -41,17 +42,52 @@ public class StudentController : ControllerBase
          Pfp = pfpBytes
         };
         stcxt.Add(student);
-        stcxt.SaveChanges();
-        return Created("Added", student);
-         
+        await stcxt.SaveChangesAsync();
+        return Created("Added", student);  
     } 
 
-
-    [HttpGet]
-    public IActionResult getAllStudents()
+    [HttpPut("update")]
+    public async Task<IActionResult> UpdateStudent([FromForm] StudentDatadto dto, string rn)
     {
-        return Ok();
+        if (dto == null || 
+            string.IsNullOrWhiteSpace(dto.Name) ||
+            string.IsNullOrWhiteSpace(dto.Email) ||
+            string.IsNullOrWhiteSpace(dto.Mobile))
+            return BadRequest();
+        var st = stcxt.Find<Student>(rn);
+        if (st == null) return NotFound($"No student found with roll number: {rn}");
+        st.Name = dto.Name;
+        st.Email = dto.Email;
+        st.Mobile = dto.Mobile;
+        if (dto.Pfp != null && dto.Pfp.Length > 0)
+        {
+            using var ms = new MemoryStream();
+            await dto.Pfp.CopyToAsync(ms);
+            st.Pfp = ms.ToArray();
+        }
+        await stcxt.SaveChangesAsync();
+        return Ok("Updated the record.");
+    } 
+
+    [HttpDelete("del")]
+    public IActionResult delStudent(string rn)
+    {
+        var st = stcxt.Find<Student>(rn);
+        if ( st != null )
+        {
+            stcxt.Remove(st);
+            stcxt.SaveChanges();
+            return Ok("Account successfully delete.");
+        }   
+        return NotFound($"No student found with roll number: {rn}");
+    }
+
+    [HttpGet("retrieve")]
+    public IActionResult getAllStudents(string rn)
+    {
+        var st = stcxt.Find<Student>(rn);
+        if ( st != null) return Ok($"Found : {st.ToString()}");
+        return NotFound($"No student found with roll number: {rn}");
     }
     
-
 }
