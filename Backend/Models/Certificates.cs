@@ -6,6 +6,5 @@ public class Certificate
 {
     [Key]
     public string RollNumber { get; set; } = string.Empty;
-
     public List<Attachment> Certificates { get; set; } = new();
 }

@@ -1,7 +1,4 @@
-using Microsoft.AspNetCore.Http;
-
 namespace Backend.DTOs.Student;
-
 public record StudentDatadto(
     string RollNumber,
     string Name,
