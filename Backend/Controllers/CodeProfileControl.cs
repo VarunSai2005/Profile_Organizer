@@ -2,8 +2,12 @@ using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Backend.Data;
 using Microsoft.Identity.Client;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
 namespace Backend.Controllers;
+
+[ApiController]
+[Route("api3/[controller]")]
 
 public class CodeProfileController : ControllerBase
 {

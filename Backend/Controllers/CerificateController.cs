@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Backend.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api4/[controller]")]
 
 public class CertificateController : ControllerBase
 {
@@ -19,19 +19,19 @@ public class CertificateController : ControllerBase
     }
 
     [HttpPost("add")]
-    public async Task<IActionResult> addCert(string rollNumber)
+    public async Task<IActionResult> addCert(string rn)
     {
-        if (string.IsNullOrWhiteSpace(rollNumber)) return BadRequest("Empty fields");
-        var st = await cccxt.FindAsync<Certificate>(rollNumber);
+        if (string.IsNullOrWhiteSpace(rn)) return BadRequest("Empty fields");
+        var st = await cccxt.FindAsync<Certificate>(rn);
         if (st != null) return Conflict("Certificate already exists");
-        var cert = new Certificate { RollNumber = rollNumber };
+        var cert = new Certificate { RollNumber = rn };
         cccxt.Add(cert);
         await cccxt.SaveChangesAsync();
         return Created("Added successfully", cert);
     }
 
     [HttpPut("addOne")]
-    public async Task<IActionResult> addOneCert(IFormFile file, string rn, string? description)
+    public async Task<IActionResult> addOneCert(IFormFile file, string rn, string? desc)
     {
         if (file == null || file.Length == 0) return BadRequest("Empty file.");
         var st = await cccxt.FindAsync<Certificate>(rn);
@@ -44,7 +44,7 @@ public class CertificateController : ControllerBase
         await file.CopyToAsync(ms);
         var cert = new Attachment
         {
-            Description = description ?? file.FileName,
+            Description = desc ?? file.FileName,
             File = ms.ToArray(),
             ContentType = file.ContentType
         };
