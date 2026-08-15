@@ -2,10 +2,8 @@ using Backend.Data;
 using Backend.DTOs.Student;
 using Backend.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Identity.Client;
-using Backend.DTOs.Auth;
-using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace Backend.Controllers;
@@ -16,11 +14,9 @@ namespace Backend.Controllers;
 public class StudentController : ControllerBase
 {
     private readonly ApplicationDbContext stcxt;
-    private readonly TokenService tokenService;
-    public StudentController (ApplicationDbContext stcxt, TokenService tokenService)
+    public StudentController(ApplicationDbContext stcxt)
     {
         this.stcxt = stcxt;
-        this.tokenService = tokenService;
     }
 
     [Authorize(Roles = "Admin")]
@@ -51,17 +47,6 @@ public class StudentController : ControllerBase
         await stcxt.SaveChangesAsync();
         return Created("Added", student);  
     } 
-
-    [AllowAnonymous]
-    [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginRequest request)
-    {
-        var student = await stcxt.Students.FindAsync(request.Username);
-        if (student is null || string.IsNullOrWhiteSpace(student.PasswordHash) || !BCrypt.Net.BCrypt.Verify(request.Password, student.PasswordHash))
-            return Unauthorized("Invalid roll number or password.");
-
-        return Ok(new LoginResponse(tokenService.CreateToken(student.RollNumber, "Student"), "Student", student.RollNumber));
-    }
 
     [Authorize(Roles = "Admin,Student")]
     [HttpPut("update")]
@@ -107,15 +92,41 @@ public class StudentController : ControllerBase
 
     [Authorize(Roles = "Admin,Student")]
     [HttpGet("retrieve")]
-    public IActionResult getAllStudents(string rn)
+    public async Task<IActionResult> GetStudent(string rn)
     {
         if (User.IsInRole("Student") && User.FindFirstValue(ClaimTypes.Name) != rn)
             return Forbid();
-        var st = stcxt.Find<Student>(rn);
-        if ( st != null) return Ok($"Found : {st.ToString()}");
-        return NotFound($"No student found with roll number: {rn}");
+
+        var student = await BuildStudentDetails(rn);
+        return student is null
+            ? NotFound($"No student found with roll number: {rn}")
+            : Ok(student);
     }
 
-    
-    
+    [Authorize(Roles = "Admin")]
+    [HttpGet("all")]
+    public async Task<IActionResult> GetAllStudents()
+    {
+        var students = await stcxt.Students.AsNoTracking()
+            .OrderBy(student => student.Name)
+            .Select(student => new StudentSummaryDto(student.RollNumber, student.Name, student.Email, student.Mobile))
+            .ToListAsync();
+        return Ok(students);
+    }
+
+    private async Task<StudentDetailsDto?> BuildStudentDetails(string rollNumber)
+    {
+        var student = await stcxt.Students.AsNoTracking().FirstOrDefaultAsync(item => item.RollNumber == rollNumber);
+        if (student is null) return null;
+
+        var codingProfile = await stcxt.CodingProfiles.AsNoTracking().FirstOrDefaultAsync(item => item.RollNumber == rollNumber);
+        var achievement = await stcxt.Achievements.AsNoTracking().Include(item => item.Achievements).FirstOrDefaultAsync(item => item.RollNumber == rollNumber);
+        var certificate = await stcxt.Certificates.AsNoTracking().Include(item => item.Certificates).FirstOrDefaultAsync(item => item.RollNumber == rollNumber);
+
+        return new StudentDetailsDto(
+            student.RollNumber, student.Name, student.Email, student.Mobile,
+            codingProfile is null ? null : new CodingProfileDto(codingProfile.CodeForces, codingProfile.LeetCode, codingProfile.CSES, codingProfile.GFG),
+            (achievement?.Achievements ?? []).Select(file => new AttachmentSummaryDto(file.Id, file.Description, file.ContentType)).ToList(),
+            (certificate?.Certificates ?? []).Select(file => new AttachmentSummaryDto(file.Id, file.Description, file.ContentType)).ToList());
+    }
 }

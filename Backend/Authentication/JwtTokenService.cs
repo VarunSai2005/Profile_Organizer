@@ -3,9 +3,9 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Backend.Services;
+namespace Backend.Authentication;
 
-public class TokenService(IConfiguration configuration)
+public class JwtTokenService(IConfiguration configuration)
 {
     public string CreateToken(string username, string role)
     {
