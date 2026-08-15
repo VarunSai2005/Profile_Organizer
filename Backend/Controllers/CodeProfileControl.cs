@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Backend.Data;
-using Microsoft.Identity.Client;
-using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
 namespace Backend.Controllers;
 
@@ -12,7 +10,6 @@ namespace Backend.Controllers;
 public class CodeProfileController : ControllerBase
 {
     private readonly ApplicationDbContext cpcxt;
-
     public CodeProfileController( ApplicationDbContext cpcxt )
     {
         this.cpcxt = cpcxt;
@@ -22,7 +19,7 @@ public class CodeProfileController : ControllerBase
     public async Task<IActionResult> addCodingProfile(CodingProfile cp)
     {
         var st = cpcxt.Find<CodingProfile>(cp.RollNumber);
-        if ( st != null )
+        if (st == null)
         { 
             cpcxt.Add(cp);
             await cpcxt.SaveChangesAsync();

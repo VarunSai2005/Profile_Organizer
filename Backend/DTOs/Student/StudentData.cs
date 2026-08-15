@@ -4,5 +4,6 @@ public record StudentDatadto(
     string Name,
     string Email,
     string Mobile,
+    string Password,
     IFormFile ? Pfp
 );

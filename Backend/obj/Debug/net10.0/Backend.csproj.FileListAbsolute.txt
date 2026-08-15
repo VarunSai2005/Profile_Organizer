@@ -154,3 +154,5 @@ D:\dotnet_pro\backend\obj\Debug\net10.0\Backend.pdb
 D:\dotnet_pro\backend\obj\Debug\net10.0\Backend.genruntimeconfig.cache
 D:\dotnet_pro\backend\obj\Debug\net10.0\ref\Backend.dll
 D:\dotnet_pro\Backend\obj\Debug\net10.0\Backend.sourcelink.json
+D:\dotnet_pro\Backend\bin\Debug\net10.0\BCrypt-Net-Next.dll
+D:\dotnet_pro\Backend\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll

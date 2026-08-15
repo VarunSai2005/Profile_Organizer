@@ -20,12 +20,12 @@ public class AchievementController : ControllerBase
     public async Task<IActionResult> addCert(string rn)
     {
         if (string.IsNullOrWhiteSpace(rn)) return BadRequest("Empty fields");
-        var st = await accxt.FindAsync<Certificate>(rn);
+        var st = await accxt.FindAsync<Achievement>(rn);
         if (st != null) return Conflict("Certificate already exists");
-        var cert = new Certificate { RollNumber = rn };
-        accxt.Add(cert);
+        var achievement = new Achievement { RollNumber = rn, Achievements = new List<Attachment>() };
+        accxt.Add(achievement);
         await accxt.SaveChangesAsync();
-        return Created("Added successfully", cert);
+        return Created("Added successfully", achievement);
     }
 
     [HttpPut("addOne")]
@@ -91,8 +91,8 @@ public class AchievementController : ControllerBase
     public async Task<IActionResult> deleteRecord(string rn)
     {
         if(string.IsNullOrWhiteSpace(rn)) return BadRequest("Empty Rollnumber");
-        var st = await accxt.Set<Certificate>()
-                            .Include(c => c.Certificates)
+        var st = await accxt.Set<Achievement>()
+                            .Include(c => c.Achievements)
                             .FirstOrDefaultAsync(c => c.RollNumber == rn);
         if (st == null) return NotFound("No record found.");
         accxt.Remove(st);
