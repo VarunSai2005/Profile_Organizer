@@ -5,6 +5,7 @@ using Backend.DTOs.Student;
 using Backend.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Net.Http.Headers;
 namespace Backend.Controllers;
 
 [ApiController]
@@ -45,6 +46,7 @@ public class CertificateController : ControllerBase
         var cert = new Attachment
         {
             Description = desc ?? file.FileName,
+            FileName = file.FileName,
             File = ms.ToArray(),
             ContentType = file.ContentType
         };
@@ -66,6 +68,7 @@ public class CertificateController : ControllerBase
         using var ms = new MemoryStream();
         await file.CopyToAsync(ms);
         target.File = ms.ToArray();
+        target.FileName = file.FileName;
         target.ContentType = file.ContentType;
         await cccxt.SaveChangesAsync();
         return Ok("successfully updated");
@@ -106,6 +109,55 @@ public class CertificateController : ControllerBase
         var cert = await cccxt.FindAsync<Attachment>(id);
         if (cert?.File == null) return NotFound();
 
-        return File(cert.File, "application/pdf", cert.Description);
+        return InlineFile(cert);
+    }
+
+    [HttpGet("download/{id:int}")]
+    public async Task<IActionResult> downloadCert(int id)
+    {
+        var cert = await cccxt.FindAsync<Attachment>(id);
+        if (cert?.File == null) return NotFound();
+
+        return File(cert.File, GetContentType(cert), GetFileName(cert), enableRangeProcessing: true);
+    }
+
+    private IActionResult InlineFile(Attachment attachment)
+    {
+        Response.Headers.ContentDisposition = new ContentDispositionHeaderValue("inline")
+        {
+            FileNameStar = GetFileName(attachment)
+        }.ToString();
+        return File(attachment.File!, GetContentType(attachment), enableRangeProcessing: true);
+    }
+
+    private static string GetContentType(Attachment attachment)
+    {
+        if (!string.IsNullOrWhiteSpace(attachment.ContentType) && attachment.ContentType != "application/octet-stream")
+            return attachment.ContentType;
+
+        var bytes = attachment.File;
+        if (bytes is null) return "application/octet-stream";
+        if (bytes.Length >= 4 && bytes[0] == 0x25 && bytes[1] == 0x50 && bytes[2] == 0x44 && bytes[3] == 0x46) return "application/pdf";
+        if (bytes.Length >= 8 && bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) return "image/png";
+        if (bytes.Length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) return "image/jpeg";
+        if (bytes.Length >= 6 && bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46) return "image/gif";
+        if (bytes.Length >= 12 && bytes[0] == 0x52 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x46 && bytes[8] == 0x57 && bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50) return "image/webp";
+        return "application/octet-stream";
+    }
+
+    private static string GetFileName(Attachment attachment)
+    {
+        var fileName = string.IsNullOrWhiteSpace(attachment.FileName) ? attachment.Description : attachment.FileName;
+        if (Path.HasExtension(fileName)) return fileName;
+
+        return GetContentType(attachment) switch
+        {
+            "application/pdf" => $"{fileName}.pdf",
+            "image/jpeg" => $"{fileName}.jpg",
+            "image/png" => $"{fileName}.png",
+            "image/gif" => $"{fileName}.gif",
+            "image/webp" => $"{fileName}.webp",
+            _ => fileName
+        };
     }
 }

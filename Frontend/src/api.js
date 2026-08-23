@@ -108,6 +108,7 @@ export const deleteCertificate = (token, rollNumber, desc) =>
   )
 
 export const getCertificateUrl = (id) => `/api4/Certificate/get/${id}`
+export const getCertificateDownloadUrl = (id) => `/api4/Certificate/download/${id}`
 
 export const uploadAchievement = (token, rollNumber, file, desc) => {
   const fd = new FormData()
@@ -127,3 +128,4 @@ export const deleteAchievement = (token, rollNumber, desc) =>
   )
 
 export const getAchievementUrl = (id) => `/api5/Achievement/get/${id}`
+export const getAchievementDownloadUrl = (id) => `/api5/Achievement/download/${id}`

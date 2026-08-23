@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import Modal from './ui/Modal'
-import { getCertificateUrl, getAchievementUrl, uploadCertificate, deleteCertificate, uploadAchievement, deleteAchievement } from '../api'
+import { getCertificateUrl, getCertificateDownloadUrl, getAchievementUrl, getAchievementDownloadUrl, uploadCertificate, deleteCertificate, uploadAchievement, deleteAchievement } from '../api'
 
 function UploadModal({ isOpen, onClose, title, onUpload }) {
   const [file, setFile] = useState(null)
@@ -90,6 +90,7 @@ export default function AttachmentsPanel({ type, files = [], rollNumber, token, 
   const labelPl = isCert ? 'Certificates' : 'Achievements'
   const icon    = isCert ? '🏆' : '🥇'
   const getUrl  = isCert ? getCertificateUrl : getAchievementUrl
+  const getDownloadUrl = isCert ? getCertificateDownloadUrl : getAchievementDownloadUrl
 
   async function handleUpload(file, desc) {
     try {
@@ -154,6 +155,9 @@ export default function AttachmentsPanel({ type, files = [], rollNumber, token, 
           <div className="attachments-grid">
             {files.map((f) => (
               <div className="attachment-item" key={f.id}>
+                {f.contentType?.startsWith('image/') && (
+                  <img className="attachment-preview" src={getUrl(f.id)} alt="" />
+                )}
                 <div className="attachment-icon">📄</div>
                 <div className="attachment-info">
                   <div className="attachment-desc" title={f.description}>{f.description}</div>
@@ -168,6 +172,13 @@ export default function AttachmentsPanel({ type, files = [], rollNumber, token, 
                     aria-label={`Open ${f.description}`}
                   >
                     Open
+                  </a>
+                  <a
+                    href={getDownloadUrl(f.id)}
+                    className="btn btn-secondary btn-sm"
+                    aria-label={`Download ${f.fileName || f.description}`}
+                  >
+                    Download
                   </a>
                   {canEdit && (
                     <button

@@ -393,6 +393,15 @@
   font-size: 1.1rem;
   flex-shrink: 0;
 }
+
+.attachment-preview {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
 .attachment-info { flex: 1; min-width: 0; }
 .attachment-desc {
   font-size: 0.875rem;

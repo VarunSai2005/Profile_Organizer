@@ -126,7 +126,7 @@ public class StudentController : ControllerBase
         return new StudentDetailsDto(
             student.RollNumber, student.Name, student.Email, student.Mobile,
             codingProfile is null ? null : new CodingProfileDto(codingProfile.CodeForces, codingProfile.LeetCode, codingProfile.CSES, codingProfile.GFG),
-            (achievement?.Achievements ?? []).Select(file => new AttachmentSummaryDto(file.Id, file.Description, file.ContentType)).ToList(),
-            (certificate?.Certificates ?? []).Select(file => new AttachmentSummaryDto(file.Id, file.Description, file.ContentType)).ToList());
+            (achievement?.Achievements ?? []).Select(file => new AttachmentSummaryDto(file.Id, file.Description, file.FileName, file.ContentType)).ToList(),
+            (certificate?.Certificates ?? []).Select(file => new AttachmentSummaryDto(file.Id, file.Description, file.FileName, file.ContentType)).ToList());
     }
 }
